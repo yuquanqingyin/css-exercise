@@ -81,7 +81,14 @@
                                         }" />
                     </div>
                     <div class="card-footer text-end">   
-                        <button class="btn btn-primary" @click="runCode">运行</button>
+                        <button class="btn btn-primary me-2" @click="runCode">运行</button>
+                        <button class="btn btn-success" @click="submitCode" :disabled="submitting">
+                            <span v-if="submitting">
+                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                评测中...
+                            </span>
+                            <span v-else>提交评测</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -100,6 +107,18 @@
                     <div v-else class="preview-placeholder">
                         <p class="text-muted">点击"运行"按钮查看结果</p>
                     </div>
+
+                    <!-- 评测结果显示区域 -->
+                    <div v-if="evaluationResult" class="evaluation-result mt-3 p-3">
+                        <div class="stars-container mb-2">
+                            <span v-for="n in 3" :key="n" class="star">
+                                {{ n <= evaluationResult.stars ? '★' : '☆' }}
+                            </span>
+                        </div>
+                        <p class="evaluation-message mb-0">{{ evaluationResult.message }}</p>
+                        <small class="text-muted">得分: {{ evaluationResult.stars }}/3 星</small>
+                    </div>
+
                     <div class="card-footer text-center">
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <!-- Button trigger modal -->
@@ -182,6 +201,8 @@ export default {
             loading: false,
             error: null,
             imageLoadError: false,
+            submitting: false,
+            evaluationResult: null,
         }
     },
     setup() {
@@ -241,6 +262,7 @@ export default {
         loadExercise(id) {
             this.loading = true;
             this.error = null;
+            this.evaluationResult = null;
             
             // 从后端获取练习题详情
             $.ajax({
@@ -273,6 +295,49 @@ export default {
                     console.error("加载练习题失败:", error);
                     this.error = "无法连接到服务器，请检查后端是否正常运行";
                     this.loading = false;
+                }
+            });
+        },
+        submitCode() {
+            if (!this.cssCode || this.cssCode.trim() === '/* 在这里编写你的 CSS 代码 */') {
+                alert('请先编写CSS代码再提交！');
+                return;
+            }
+
+            this.submitting = true;
+            this.evaluationResult = null;
+
+            // 提交代码到后端进行评测
+            $.ajax({
+                url: 'http://localhost:8080/api/submit/evaluate/',
+                type: 'post',
+                contentType: 'application/json',
+                headers: {
+                    Authorization: "Bearer " + this.$store.state.user.token,
+                },
+                data: JSON.stringify({
+                    exerciseId: this.exerciseId,
+                    cssCode: this.cssCode
+                }),
+                success: (resp) => {
+                    this.submitting = false;
+                    if (resp.error_message === "success") {
+                        this.evaluationResult = {
+                            stars: resp.stars,
+                            message: resp.message,
+                            exerciseId: resp.exerciseId
+                        };
+                        
+                        // 可选：显示提示信息
+                        console.log('评测成功！得分：' + resp.stars + ' 星');
+                    } else {
+                        alert('评测失败：' + resp.error_message);
+                    }
+                },
+                error: (xhr, status, error) => {
+                    this.submitting = false;
+                    console.error("提交评测失败:", error);
+                    alert('提交失败，请检查网络连接或重试！');
                 }
             });
         },
@@ -423,5 +488,29 @@ export default {
     justify-content: center;
     align-items: center;
     min-height: 400px;
+}
+
+/* 评测结果样式 */
+.evaluation-result {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 10px;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stars-container {
+    font-size: 2.5rem;
+    letter-spacing: 5px;
+}
+
+.star {
+    display: inline-block;
+    color: #ffd700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.evaluation-message {
+    font-size: 1.1rem;
+    font-weight: 500;
 }
 </style>
