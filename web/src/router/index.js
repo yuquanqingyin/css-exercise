@@ -16,7 +16,7 @@ const routes = [
     }
   },
   {
-    path: '/exercise',
+    path: '/exercise/:id',
     name: 'exercise',
     component: ExerciseView,
     meta: {

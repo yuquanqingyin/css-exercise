@@ -15,7 +15,7 @@ export default {
     },
   },
   mounted() {
-    const router = useRouter(); // 获取路由实例
+    const router = useRouter();
     const width = window.innerWidth;
     const height = window.innerHeight;
 
@@ -27,7 +27,6 @@ export default {
       .style("background", "radial-gradient(circle at center, #f8f9fa, #e9ecef)")
       .style("cursor", "grab");
 
-    // 调整布局参数，美化视觉效果
     const simulation = d3
       .forceSimulation(this.data.nodes)
       .force(
@@ -35,9 +34,9 @@ export default {
         d3
           .forceLink(this.data.links)
           .id((d) => d.id)
-          .distance(180) // 节点间距
+          .distance(180)
       )
-      .force("charge", d3.forceManyBody().strength(-500)) // 排斥力
+      .force("charge", d3.forceManyBody().strength(-500))
       .force("center", d3.forceCenter(width / 2, height / 2));
 
     // 绘制连线
@@ -62,10 +61,24 @@ export default {
       .attr("stroke", "#333")
       .attr("stroke-width", 1.5)
       .style("cursor", "pointer")
-      .on("click", () => {
-        // 点击节点时跳转
-        // router.push(`/person/${encodeURIComponent(d.name)}`);
-        router.push({name: 'exercise'});
+      .on("mouseover", function() {
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .attr("r", 40);
+      })
+      .on("mouseout", function() {
+        d3.select(this)
+          .transition()
+          .duration(200)
+          .attr("r", 35);
+      })
+      .on("click", (event, d) => {
+        // 点击节点时跳转到练习页面，传递练习ID
+        router.push({
+          name: 'exercise',
+          params: { id: d.id }
+        });
       })
       .call(
         d3
@@ -83,12 +96,12 @@ export default {
       .enter()
       .append("text")
       .text((d) => d.name)
-      .attr("font-size", 18)
+      .attr("font-size", 14)
       .attr("fill", "#212529")
       .attr("font-family", "Microsoft YaHei, sans-serif")
       .attr("text-anchor", "middle")
       .attr("dy", 6)
-      .style("pointer-events", "none"); // 文字不阻止点击圆形
+      .style("pointer-events", "none");
 
     // 动画更新
     simulation.on("tick", () => {
