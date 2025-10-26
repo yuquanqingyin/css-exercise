@@ -37,7 +37,10 @@
                         <div class="card">
                             <div class="card-header">预期效果</div>
                             <div class="card-body">
-                                <img src="@/assets/images/desired-outcome.png" class="img-fluid" alt="">
+                                <img :src="desiredOutcomeImage" class="img-fluid" alt="预期效果" @error="handleImageError">
+                                <p v-if="imageLoadError" class="text-muted text-center mt-2">
+                                    <small>预期效果图片加载失败</small>
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -178,6 +181,7 @@ export default {
             currentExercise: null,
             loading: false,
             error: null,
+            imageLoadError: false,
         }
     },
     setup() {
@@ -247,16 +251,18 @@ export default {
                 },
                 success: (resp) => {
                     if (resp.error_message === "success") {
-                        this.currentExercise = resp.exercise;
-                        this.exerciseContent = this.currentExercise.description || '';
-                        this.htmlContent = this.currentExercise.htmlContent || '';
-                        this.hint = this.currentExercise.hint || '';
-                        this.answer = this.currentExercise.answer || '';
+                        // 后端直接返回练习题的各个字段
+                        this.currentExercise = resp;
+                        this.exerciseContent = resp.description || '';
+                        this.htmlContent = resp.htmlContent || '';
+                        this.hint = resp.hint || '';
+                        this.answer = resp.answer || '';
                         
                         // 重置状态
                         this.cssCode = '/* 在这里编写你的 CSS 代码 */\n';
                         this.hasRun = false;
                         this.currentCss = '';
+                        this.imageLoadError = false;
                         this.loading = false;
                     } else {
                         this.error = resp.error_message || "获取题目详情失败";
@@ -269,11 +275,24 @@ export default {
                     this.loading = false;
                 }
             });
+        },
+        handleImageError() {
+            this.imageLoadError = true;
+            console.warn(`图片加载失败: desired-outcome${this.exerciseId}.png`);
         }
     },
     computed: {
         renderedMarkdown() {
             return marked(this.exerciseContent)
+        },
+        desiredOutcomeImage() {
+            // 动态生成图片路径，根据exerciseId
+            try {
+                return require(`@/assets/images/desired-outcome${this.exerciseId}.png`);
+            } catch (e) {
+                console.warn(`无法加载图片: desired-outcome${this.exerciseId}.png`);
+                return '';
+            }
         },
         renderedHTML() {
             return marked('```html\n' + this.htmlContent + '\n```')

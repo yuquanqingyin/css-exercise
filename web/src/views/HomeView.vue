@@ -51,20 +51,9 @@ export default {
         },
         success: (resp) => {
           if (resp.error_message === "success") {
-            // 将后端返回的数据转换为图表需要的格式
-            this.graphData.nodes = resp.exercises.map(exercise => ({
-              id: exercise.id,
-              name: exercise.name,
-              exerciseData: exercise
-            }));
-            
-            // 设置关系数据（如果后端返回了links）
-            if (resp.links) {
-              this.graphData.links = resp.links;
-            } else {
-              // 如果后端没有返回links，使用默认的关系
-              this.graphData.links = this.getDefaultLinks(resp.exercises);
-            }
+            // 后端已经返回了正确格式的nodes和links
+            this.graphData.nodes = resp.nodes || [];
+            this.graphData.links = resp.links || [];
             
             this.loading = false;
           } else {
@@ -79,19 +68,6 @@ export default {
         }
       });
     },
-    
-    // 如果后端没有返回关系数据，生成默认的关系图
-    getDefaultLinks(exercises) {
-      const links = [];
-      // 创建一个简单的链式关系
-      for (let i = 0; i < exercises.length - 1; i++) {
-        links.push({
-          source: exercises[i].id,
-          target: exercises[i + 1].id
-        });
-      }
-      return links;
-    }
   },
 };
 </script>
