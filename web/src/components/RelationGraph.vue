@@ -57,24 +57,34 @@ export default {
       .enter()
       .append("circle")
       .attr("r", 35)
-      .attr("fill", (d, i) => d3.schemeSet2[i % 8])
-      .attr("stroke", "#333")
-      .attr("stroke-width", 1.5)
+      // 根据完成状态设置节点颜色：已完成=黄色，未完成=灰色
+      .attr("fill", (d) => d.completed ? "#ffc107" : "#9e9e9e")
+      .attr("stroke", (d) => d.completed ? "#ff9800" : "#757575")
+      .attr("stroke-width", 2)
       .style("cursor", "pointer")
-      .on("mouseover", function() {
+      // 添加阴影效果，让已完成的节点更突出
+      .style("filter", (d) => d.completed ? "drop-shadow(0 2px 4px rgba(255, 193, 7, 0.4))" : "none")
+      .on("mouseover", function(event, d) {
         d3.select(this)
           .transition()
           .duration(200)
-          .attr("r", 40);
+          .attr("r", 40)
+          // 鼠标悬停时增强阴影效果
+          .style("filter", d.completed ? 
+            "drop-shadow(0 4px 8px rgba(255, 193, 7, 0.6))" : 
+            "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))");
       })
-      .on("mouseout", function() {
+      .on("mouseout", function(event, d) {
         d3.select(this)
           .transition()
           .duration(200)
-          .attr("r", 35);
+          .attr("r", 35)
+          .style("filter", d.completed ? 
+            "drop-shadow(0 2px 4px rgba(255, 193, 7, 0.4))" : 
+            "none");
       })
       .on("click", (event, d) => {
-        // 点击节点时跳转到练习页面，传递练习ID
+        // 点击节点时跳转到练习页面，传递练习 ID
         router.push({
           name: 'exercise',
           params: { id: d.id }
@@ -97,11 +107,48 @@ export default {
       .append("text")
       .text((d) => d.name)
       .attr("font-size", 14)
-      .attr("fill", "#212529")
+      .attr("fill", (d) => d.completed ? "#212529" : "#757575")
       .attr("font-family", "Microsoft YaHei, sans-serif")
+      .attr("font-weight", (d) => d.completed ? "bold" : "normal")
       .attr("text-anchor", "middle")
       .attr("dy", 6)
       .style("pointer-events", "none");
+
+    // 添加图例
+    const legend = svg.append("g")
+      .attr("transform", `translate(${width - 150}, 30)`);
+
+    // 已完成图例
+    legend.append("circle")
+      .attr("cx", 0)
+      .attr("cy", 0)
+      .attr("r", 10)
+      .attr("fill", "#ffc107")
+      .attr("stroke", "#ff9800")
+      .attr("stroke-width", 2);
+
+    legend.append("text")
+      .attr("x", 20)
+      .attr("y", 5)
+      .text("已完成")
+      .attr("font-size", 14)
+      .attr("fill", "#212529");
+
+    // 未完成图例
+    legend.append("circle")
+      .attr("cx", 0)
+      .attr("cy", 30)
+      .attr("r", 10)
+      .attr("fill", "#9e9e9e")
+      .attr("stroke", "#757575")
+      .attr("stroke-width", 2);
+
+    legend.append("text")
+      .attr("x", 20)
+      .attr("y", 35)
+      .text("未完成")
+      .attr("font-size", 14)
+      .attr("fill", "#212529");
 
     // 动画更新
     simulation.on("tick", () => {
