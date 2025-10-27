@@ -1,9 +1,13 @@
 // SubmitServiceImpl.java
 package com.css_exercise.backend.service.impl.submit;
 
+import com.css_exercise.backend.mapper.SubmissionRecordMapper;
+import com.css_exercise.backend.pojo.SubmissionRecord;
 import com.css_exercise.backend.service.submit.SubmitService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -12,6 +16,9 @@ import java.util.Random;
 public class SubmitServiceImpl implements SubmitService {
 
     private final Random random = new Random();
+
+    @Autowired
+    private SubmissionRecordMapper submissionRecordMapper;
 
     @Override
     public Map<String, Object> evaluateCss(String exerciseId, String cssCode, Integer userId) {
@@ -23,6 +30,18 @@ public class SubmitServiceImpl implements SubmitService {
 
             // 模拟评测过程的延迟（可选）
             Thread.sleep(500);
+
+            // 保存提交记录到数据库
+            if (userId != null) {
+                SubmissionRecord record = new SubmissionRecord();
+                record.setUserId(userId);
+                record.setExerciseId(exerciseId);
+                record.setCssCode(cssCode);
+                record.setScore(stars);
+                record.setSubmitTime(LocalDateTime.now());
+
+                submissionRecordMapper.insert(record);
+            }
 
             result.put("error_message", "success");
             result.put("stars", stars);

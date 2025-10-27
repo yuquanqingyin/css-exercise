@@ -1,11 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import ExerciseView from '@/views/ExerciseView.vue'
+import MySubmissionsView from '@/views/MySubmissionsView.vue'
 import RelationGraph from '@/components/RelationGraph.vue'
 import UserAccountLoginView from '@/views/user/account/UserAccountLoginView.vue'
 import UserAccountRegisterView from '@/views/user/account/UserAccountRegisterView.vue'
 import NotFound from '@/views/NotFound.vue'
 import store from '@/store/index.js'
+
 const routes = [
   {
     path: '/',
@@ -19,6 +21,14 @@ const routes = [
     path: '/exercise/:id',
     name: 'exercise',
     component: ExerciseView,
+    meta: {
+      requestAuth: true,
+    }
+  },
+  {
+    path: '/my-submissions',
+    name: 'my_submissions',
+    component: MySubmissionsView,
     meta: {
       requestAuth: true,
     }
