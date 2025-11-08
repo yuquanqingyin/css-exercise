@@ -17,7 +17,8 @@ public class InfoServiceImpl implements InfoService {
 
     @Override
     public Map<String, String> getInfo() {
-        UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken)
+                SecurityContextHolder.getContext().getAuthentication();
         UserDetailsImpl loginUser = (UserDetailsImpl) token.getPrincipal();
         User user = loginUser.getUser();
 
@@ -25,6 +26,9 @@ public class InfoServiceImpl implements InfoService {
         map.put("error_message","success");
         map.put("id", user.getId().toString());
         map.put("username", user.getUsername());
+        map.put("role", user.getRole()); // 新增角色字段
         return map;
     }
+
+
 }

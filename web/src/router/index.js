@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import ExerciseView from '@/views/ExerciseView.vue'
 import MySubmissionsView from '@/views/MySubmissionsView.vue'
+import TeacherDashboardView from '@/views/teacher/TeacherDashboardView.vue'
+import StudentDetailView from '@/views/teacher/StudentDetailView.vue'
+import ExerciseStatsView from '@/views/teacher/ExerciseStatsView.vue'
 import RelationGraph from '@/components/RelationGraph.vue'
 import UserAccountLoginView from '@/views/user/account/UserAccountLoginView.vue'
 import UserAccountRegisterView from '@/views/user/account/UserAccountRegisterView.vue'
@@ -31,6 +34,33 @@ const routes = [
     component: MySubmissionsView,
     meta: {
       requestAuth: true,
+    }
+  },
+  {
+    path: '/teacher/dashboard',
+    name: 'teacher_dashboard',
+    component: TeacherDashboardView,
+    meta: {
+      requestAuth: true,
+      requireTeacher: true,
+    }
+  },
+  {
+    path: '/teacher/student/:id',
+    name: 'student_detail',
+    component: StudentDetailView,
+    meta: {
+      requestAuth: true,
+      requireTeacher: true,
+    }
+  },
+  {
+    path: '/teacher/exercises',
+    name: 'exercise_stats',
+    component: ExerciseStatsView,
+    meta: {
+      requestAuth: true,
+      requireTeacher: true,
     }
   },
   {
@@ -79,7 +109,10 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   if (to.meta.requestAuth && !store.state.user.is_login) {
     next({name: "user_account_login"});
-  }else {
+  } else if (to.meta.requireTeacher && store.state.user.role !== 'teacher') {
+    // 如果需要教师权限但用户不是教师，重定向到首页
+    next({name: "home"});
+  } else {
     next();
   }
 })
