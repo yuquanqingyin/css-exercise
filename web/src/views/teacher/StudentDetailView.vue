@@ -1,151 +1,147 @@
-
 <template>
-  <ContentField>
-    <div v-if="loading" class="loading-container">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">加载中...</span>
-      </div>
-      <p class="mt-3">正在加载学生数据...</p>
-    </div>
+<ContentField>
+ <div v-if="loading" class="loading-container">
+ <div class="spinner-border text-primary" role="status">
+ <span class="visually-hidden">加载中...</span>
+ </div>
+ <p class="mt-3">正在加载学生数据...</p>
+ </div>
+ <div v-else-if="error" class="alert alert-danger" role="alert">
+ <h4 class="alert-heading">加载失败</h4>
+ <p>{{ error }}</p>
+ <button class="btn btn-primary" @click="loadStudentData">重试</button>
+ </div>
+ <div v-else>
+ <div class="d-flex justify-content-between align-items-center mb-4">
+ <div>
+ <button class="btn btn-outline-secondary me-3" @click="goBack">
+ ← 返回
+ </button>
+ <h2 class="d-inline">{{ studentName }} 的做题情况</h2>
+ </div>
+ <button class="btn btn-outline-primary" @click="loadStudentData">
+ <i class="bi bi-arrow-clockwise"></i> 刷新
+ </button>
+ </div>
+ <div v-if="submissions.length === 0" class="empty-state text-center py-5">
+ <h4 class="text-muted">该学生暂无提交记录</h4>
+ </div>
+ <div v-else>
+ <!-- 统计卡片 -->
+ <div class="row mb-4">
+ <div class="col-md-3">
+ <div class="stat-card text-center">
+ <h3 class="text-primary">{{ totalSubmissions }}</h3>
+ <p class="text-muted mb-0">总提交次数</p>
+ </div>
+ </div>
+ <div class="col-md-3">
+ <div class="stat-card text-center">
+ <h3 class="text-success">{{ completedExercises }}</h3>
+ <p class="text-muted mb-0">已完成题目</p>
+ </div>
+ </div>
+ <div class="col-md-3">
+ <div class="stat-card text-center">
+ <h3 class="text-warning">{{ averageScore }}</h3>
+ <p class="text-muted mb-0">平均分</p>
+ </div>
+ </div>
+ <div class="col-md-3">
+ <div class="stat-card text-center">
+ <h3 class="text-info">{{ perfectCount }}</h3>
+ <p class="text-muted mb-0">满分次数</p>
+ </div>
+ </div>
+ </div>
+ <!-- 提交记录表格 -->
+ <div class="table-responsive">
+ <table class="table table-hover align-middle">
+ <thead class="table-light">
+ <tr>
+ <th scope="col">#</th>
+ <th scope="col">练习题</th>
+ <th scope="col">得分</th>
+ <th scope="col">提交时间</th>
+ <th scope="col">操作</th>
+ </tr>
+ </thead>
+ <tbody>
+ <tr v-for="(submission, index) in submissions" :key="submission.id">
+ <th scope="row">{{ index + 1 }}</th>
+ <td>
+ <div>
+ <strong>{{ submission.exerciseName }}</strong>
+<br>
+<small class="text-muted">{{ submission.exerciseTitle }}</small>
+ </div>
+ </td>
+ <td>
+ <div class="stars-display">
+ <span v-for="n in 3" :key="n" class="star" :class="{'filled': n <= submission.score}">
+ {{ n <= submission.score ? '★' : '☆' }}
+ </span>
+<span class="ms-2 badge" :class="getScoreBadgeClass(submission.score)">
+ {{ submission.score }}/3 星
+ </span>
+ </div>
+ </td>
+ <td>
+ <small>{{ formatDateTime(submission.submitTime) }}</small>
+ </td>
+ <td>
+ <button class="btn btn-sm btn-outline-primary" @click="viewCode(submission)">
+ 查看代码
+ </button>
+ </td>
+ </tr>
+ </tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+</ContentField>
 
-    <div v-else-if="error" class="alert alert-danger" role="alert">
-      <h4 class="alert-heading">加载失败</h4>
-      <p>{{ error }}</p>
-      <button class="btn btn-primary" @click="loadStudentData">重试</button>
-    </div>
-
-    <div v-else>
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <button class="btn btn-outline-secondary me-3" @click="goBack">
-            ← 返回
-          </button>
-          <h2 class="d-inline">{{ studentName }} 的做题情况</h2>
+<!-- 将模态框移到 ContentField 外面，放在根元素下 -->
+<teleport to="body">
+  <div class="modal fade" id="codeModal" tabindex="-1" aria-labelledby="codeModalLabel" aria-hidden="true" ref="modalElement">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content modal-glass">
+        <div class="modal-header">
+          <h5 class="modal-title" id="codeModalLabel">提交的代码</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <button class="btn btn-outline-primary" @click="loadStudentData">
-          <i class="bi bi-arrow-clockwise"></i> 刷新
-        </button>
-      </div>
-
-      <div v-if="submissions.length === 0" class="empty-state text-center py-5">
-        <h4 class="text-muted">该学生暂无提交记录</h4>
-      </div>
-
-      <div v-else>
-        <!-- 统计卡片 -->
-        <div class="row mb-4">
-          <div class="col-md-3">
-            <div class="stat-card text-center">
-              <h3 class="text-primary">{{ totalSubmissions }}</h3>
-              <p class="text-muted mb-0">总提交次数</p>
+        <div class="modal-body">
+          <div v-if="selectedSubmission">
+            <div class="mb-3">
+              <strong>学生：</strong> {{ studentName }}
             </div>
-          </div>
-          <div class="col-md-3">
-            <div class="stat-card text-center">
-              <h3 class="text-success">{{ completedExercises }}</h3>
-              <p class="text-muted mb-0">已完成题目</p>
+            <div class="mb-3">
+              <strong>练习题：</strong> {{ selectedSubmission.exerciseName }}
             </div>
-          </div>
-          <div class="col-md-3">
-            <div class="stat-card text-center">
-              <h3 class="text-warning">{{ averageScore }}</h3>
-              <p class="text-muted mb-0">平均分</p>
+            <div class="mb-3">
+              <strong>得分：</strong>
+              <span v-for="n in 3" :key="n" class="star" :class="{'filled': n <= selectedSubmission.score}">
+                {{ n <= selectedSubmission.score ? '★' : '☆' }}
+              </span>
             </div>
-          </div>
-          <div class="col-md-3">
-            <div class="stat-card text-center">
-              <h3 class="text-info">{{ perfectCount }}</h3>
-              <p class="text-muted mb-0">满分次数</p>
+            <div class="mb-3">
+              <strong>提交时间：</strong> {{ formatDateTime(selectedSubmission.submitTime) }}
+            </div>
+            <div>
+              <strong>CSS 代码：</strong>
+              <pre class="code-display"><code>{{ selectedSubmission.cssCode }}</code></pre>
             </div>
           </div>
         </div>
-
-        <!-- 提交记录表格 -->
-        <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead class="table-light">
-              <tr>
-                <th scope="col">#</th>
-                <th scope="col">练习题</th>
-                <th scope="col">得分</th>
-                <th scope="col">提交时间</th>
-                <th scope="col">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(submission, index) in submissions" :key="submission.id">
-                <th scope="row">{{ index + 1 }}</th>
-                <td>
-                  <div>
-                    <strong>{{ submission.exerciseName }}</strong>
-                    <br>
-                    <small class="text-muted">{{ submission.exerciseTitle }}</small>
-                  </div>
-                </td>
-                <td>
-                  <div class="stars-display">
-                    <span v-for="n in 3" :key="n" class="star" :class="{'filled': n <= submission.score}">
-                      {{ n <= submission.score ? '★' : '☆' }}
-                    </span>
-                    <span class="ms-2 badge" :class="getScoreBadgeClass(submission.score)">
-                      {{ submission.score }}/3 星
-                    </span>
-                  </div>
-                </td>
-                <td>
-                  <small>{{ formatDateTime(submission.submitTime) }}</small>
-                </td>
-                <td>
-                  <button class="btn btn-sm btn-outline-primary" @click="viewCode(submission)">
-                    查看代码
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- 代码查看模态框 -->
-    <div class="modal fade" id="codeModal" tabindex="-1" aria-labelledby="codeModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="codeModalLabel">提交的代码</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <div v-if="selectedSubmission">
-              <div class="mb-3">
-                <strong>学生：</strong> {{ studentName }}
-              </div>
-              <div class="mb-3">
-                <strong>练习题：</strong> {{ selectedSubmission.exerciseName }}
-              </div>
-              <div class="mb-3">
-                <strong>得分：</strong>
-                <span v-for="n in 3" :key="n" class="star" :class="{'filled': n <= selectedSubmission.score}">
-                  {{ n <= selectedSubmission.score ? '★' : '☆' }}
-                </span>
-              </div>
-              <div class="mb-3">
-                <strong>提交时间：</strong> {{ formatDateTime(selectedSubmission.submitTime) }}
-              </div>
-              <div>
-                <strong>CSS 代码：</strong>
-                <pre class="code-display"><code>{{ selectedSubmission.cssCode }}</code></pre>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
-            <button type="button" class="btn btn-primary" @click="copyCode">复制代码</button>
-          </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+          <button type="button" class="btn btn-primary" @click="copyCode">复制代码</button>
         </div>
       </div>
     </div>
-  </ContentField>
+  </div>
+</teleport>
 </template>
 
 <script>
@@ -187,13 +183,26 @@ export default {
   mounted() {
     this.studentId = this.$route.params.id;
     this.loadStudentData();
-    this.codeModal = new Modal(document.getElementById('codeModal'));
+    
+    // 等待 DOM 更新后初始化模态框
+    this.$nextTick(() => {
+      const modalElement = document.getElementById('codeModal');
+      if (modalElement) {
+        this.codeModal = new Modal(modalElement);
+      }
+    });
+  },
+  beforeUnmount() {
+    // 组件销毁前清理模态框
+    if (this.codeModal) {
+      this.codeModal.dispose();
+    }
   },
   methods: {
     loadStudentData() {
       this.loading = true;
       this.error = null;
-
+      
       $.ajax({
         url: `http://localhost:8080/api/teacher/student/${this.studentId}/submissions/`,
         type: "get",
@@ -220,7 +229,9 @@ export default {
     },
     viewCode(submission) {
       this.selectedSubmission = submission;
-      this.codeModal.show();
+      if (this.codeModal) {
+        this.codeModal.show();
+      }
     },
     copyCode() {
       if (this.selectedSubmission && this.selectedSubmission.cssCode) {
@@ -325,5 +336,24 @@ export default {
 
 .table tbody tr:hover {
   background-color: #f8f9fa;
+}
+
+/* 模态框样式 */
+.modal-glass {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+}
+
+/* 确保模态框在最上层 */
+:deep(.modal) {
+  z-index: 2000 !important;
+}
+
+:deep(.modal-backdrop) {
+  z-index: 1999 !important;
 }
 </style>

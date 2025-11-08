@@ -1,4 +1,5 @@
 <template>
+<div class="home-view">
   <div v-if="loading" class="loading-container">
     <div class="spinner-border text-primary" role="status">
       <span class="visually-hidden">加载中...</span>
@@ -13,12 +14,12 @@
     </div>
   </div>
   <RelationGraph v-else :data="graphData" />
+</div>
 </template>
 
 <script>
 import RelationGraph from "@/components/RelationGraph.vue";
 import $ from 'jquery';
-
 export default {
   name: "HomeView",
   components: { 
@@ -42,7 +43,6 @@ export default {
       this.loading = true;
       this.error = null;
       
-      // 从后端获取练习题列表
       $.ajax({
         url: "http://localhost:8080/api/exercise/list/",
         type: "get",
@@ -51,10 +51,8 @@ export default {
         },
         success: (resp) => {
           if (resp.error_message === "success") {
-            // 后端已经返回了正确格式的nodes和links
             this.graphData.nodes = resp.nodes || [];
             this.graphData.links = resp.links || [];
-            
             this.loading = false;
           } else {
             this.error = resp.error_message || "获取数据失败";
@@ -73,25 +71,46 @@ export default {
 </script>
 
 <style scoped>
+.home-view {
+  position: relative;
+  width: 100%;
+  height: 100%; /* 改为 100% 而不是 calc(100vh - 56px) */
+  min-height: calc(100vh - 56px); /* 确保最小高度 */
+  background: transparent;
+  overflow: hidden;
+}
+
 .loading-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background: linear-gradient(to bottom right, #ffffff, #f1f3f5);
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  margin: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.loading-container .spinner-border {
+  width: 3rem;
+  height: 3rem;
 }
 
 .error-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background: linear-gradient(to bottom right, #ffffff, #f1f3f5);
+  height: 100%;
   padding: 20px;
 }
 
 .error-container .alert {
   max-width: 500px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 </style>

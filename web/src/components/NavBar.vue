@@ -118,29 +118,111 @@ export default {
   }
 }
 </script>
-
 <style scoped>
+/* 毛玻璃导航栏 */
+.custom-navbar {
+  background: rgba(255, 255, 255, 0.75) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  position: relative;
+  z-index: 1000; /* 确保导航栏在最上层 */
+}
+
+/* 品牌样式 */
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.4rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brand-icon {
+  font-size: 1.5rem;
+  margin-right: 5px;
+}
+
+/* 导航链接 */
+.nav-link {
+  color: #4a5568 !important;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 0.5rem 1rem !important;
+}
+
+.nav-link:hover {
+  color: #667eea !important;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.nav-link:hover::after {
+  width: 80%;
+}
+
+.nav-link.router-link-active {
+  color: #667eea !important;
+  font-weight: 600;
+}
+
+.nav-link.router-link-active::after {
+  width: 80%;
+}
+
+/* 渐变徽章 */
+.bg-gradient-custom {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+}
+
+/* 下拉菜单容器 */
+.dropdown {
+  position: relative;
+}
+
+/* 下拉菜单 */
 .dropdown-menu {
   position: absolute;
   top: 100%;
   right: 0;
-  z-index: 1000;
+  z-index: 1050; /* 提高 z-index */
   display: none;
-  min-width: 10rem;
+  min-width: 12rem;
   padding: 0.5rem 0;
-  margin: 0;
+  margin: 0.125rem 0 0;
   font-size: 1rem;
   color: #212529;
   text-align: left;
   list-style: none;
-  background-color: #fff;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   background-clip: padding-box;
-  border: 1px solid rgba(0,0,0,.15);
-  border-radius: 0.375rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
 .dropdown-menu.show {
   display: block;
+}
+
+.dropdown-toggle {
+  cursor: pointer;
 }
 
 .dropdown-toggle::after {
@@ -154,34 +236,38 @@ export default {
   border-left: 0.3em solid transparent;
 }
 
+/* 下拉菜单项 */
 .dropdown-item {
   display: block;
   width: 100%;
-  padding: 0.25rem 1rem;
+  padding: 0.5rem 1.5rem;
   clear: both;
   font-weight: 400;
-  color: #212529;
+  color: #4a5568;
   text-align: inherit;
   text-decoration: none;
   white-space: nowrap;
   background-color: transparent;
   border: 0;
+  transition: all 0.3s ease;
+  cursor: pointer; /* 添加手型光标 */
 }
 
 .dropdown-item:hover,
 .dropdown-item:focus {
-  color: #1e2125;
-  background-color: #e9ecef;
+  color: #667eea;
+  background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%);
 }
 
 .dropdown-divider {
   height: 0;
   margin: 0.5rem 0;
   overflow: hidden;
-  border-top: 1px solid rgba(0,0,0,.15);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .badge {
   font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
 }
 </style>
