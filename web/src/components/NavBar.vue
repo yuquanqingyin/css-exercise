@@ -134,7 +134,7 @@ export default {
 .navbar-brand {
   font-weight: 700;
   font-size: 1.4rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: rgb(92, 10, 14);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -147,7 +147,7 @@ export default {
 
 /* 导航链接 */
 .nav-link {
-  color: #4a5568 !important;
+  color: rgb(92, 10, 14) !important;
   font-weight: 500;
   transition: all 0.3s ease;
   position: relative;
@@ -155,7 +155,7 @@ export default {
 }
 
 .nav-link:hover {
-  color: #667eea !important;
+  color: rgb(92, 10, 14) !important;
 }
 
 .nav-link::after {
@@ -165,7 +165,7 @@ export default {
   left: 50%;
   width: 0;
   height: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: rgb(92, 10, 14);
   transition: all 0.3s ease;
   transform: translateX(-50%);
 }
@@ -175,12 +175,13 @@ export default {
 }
 
 .nav-link.router-link-active {
-  color: #667eea !important;
+  color: rgb(92, 10, 14) !important;
   font-weight: 600;
 }
 
 .nav-link.router-link-active::after {
   width: 80%;
+  background: rgb(92, 10, 14);
 }
 
 /* 渐变徽章 */
